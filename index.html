@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Jadwal KTM Komuter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ──────────────────────────────────────────────
+       RESET & BASE
+    ────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green:   #009A44;
+      --green-d: #007A36;
+      --blue:    #0072CE;
+      --bg:      #F4F6F9;
+      --card:    #FFFFFF;
+      --text:    #1A1A2E;
+      --muted:   #6B7280;
+      --border:  #E5E7EB;
+      --radius:  12px;
+      --shadow:  0 2px 12px rgba(0,0,0,.08);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ──────────────────────────────────────────────
+       HEADER
+    ────────────────────────────────────────────── */
+    header {
+      background: linear-gradient(135deg, #007A36 0%, #009A44 50%, #00B050 100%);
+      color: #fff;
+      padding: 0 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 16px rgba(0,0,0,.25);
+    }
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.9rem 0;
+    }
+    .ktm-logo {
+      width: 44px;
+      height: 44px;
+      background: #fff;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: var(--green);
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .header-title h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .header-title p {
+      font-size: 0.75rem;
+      opacity: 0.85;
+    }
+    .header-time {
+      margin-left: auto;
+      text-align: right;
+    }
+    .header-time #live-time {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+    .header-time #live-date {
+      font-size: 0.72rem;
+      opacity: 0.85;
+    }
+
+    /* ──────────────────────────────────────────────
+       MAIN LAYOUT
+    ────────────────────────────────────────────── */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    /* ──────────────────────────────────────────────
+       CARD
+    ────────────────────────────────────────────── */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.5rem;
+    }
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text);
+    }
+    .card-title .icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--green);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+    }
+
+    /* ──────────────────────────────────────────────
+       SEARCH SECTION
+    ────────────────────────────────────────────── */
+    .search-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 0.9rem;
+      align-items: end;
+    }
+    @media (max-width: 768px) {
+      .search-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    @media (max-width: 480px) {
+      .search-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .input-wrap {
+      position: relative;
+    }
+    .input-wrap select,
+    .input-wrap input {
+      width: 100%;
+      padding: 0.6rem 0.9rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: var(--text);
+      background: #fff;
+      outline: none;
+      transition: border-color .2s;
+      appearance: none;
+    }
+    .input-wrap select:focus,
+    .input-wrap input:focus {
+      border-color: var(--green);
+    }
+    .input-wrap .arrow {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+    .swap-btn {
+      cursor: pointer;
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 0.8rem;
+      font-size: 1.1rem;
+      color: var(--muted);
+      transition: all .2s;
+      align-self: flex-end;
+    }
+    .swap-btn:hover {
+      border-color: var(--green);
+      color: var(--green);
+      background: #f0faf4;
+    }
+    .btn-search {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.65rem 1.5rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background .2s;
+      white-space: nowrap;
+    }
+    .btn-search:hover { background: var(--green-d); }
+
+    /* ──────────────────────────────────────────────
+       DAY TYPE TOGGLE
+    ────────────────────────────────────────────── */
+    .day-toggle {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .day-toggle button {
+      padding: 0.45rem 1rem;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      background: #fff;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all .2s;
+    }
+    .day-toggle button.active {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
+
+    /* ──────────────────────────────────────────────
+       NEXT TRAIN COUNTDOWN BANNER
+    ────────────────────────────────────────────── */
+    .countdown-banner {
+      display: none;
+      background: linear-gradient(90deg, #007A36, #009A44);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 1rem 1.5rem;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .countdown-banner.visible { display: flex; }
+    .countdown-left span:first-child {
+      font-size: 0.78rem;
+      opacity: 0.85;
+    }
+    .countdown-left .route-label {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .countdown-right {
+      text-align: right;
+    }
+    .countdown-right .cnt-label {
+      font-size: 0.78rem;
+      opacity: 0.85;
+    }
+    .countdown-right #countdown-timer {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+    .countdown-right #next-dep {
+      font-size: 0.82rem;
+      opacity: 0.9;
+    }
+
+    /* ──────────────────────────────────────────────
+       RESULTS
+    ────────────────────────────────────────────── */
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.9rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .results-count {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    .filter-time {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .filter-time select {
+      padding: 0.3rem 0.6rem;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-family: inherit;
+      color: var(--muted);
+      outline: none;
+    }
+
+    .train-list { display: flex; flex-direction: column; gap: 0.65rem; }
+
+    .train-card {
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 0.9rem 1.1rem;
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      gap: 0.9rem;
+      align-items: center;
+      transition: box-shadow .2s, border-color .2s;
+      cursor: default;
+    }
+    .train-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,.1);
+      border-color: #c0dfc8;
+    }
+    .train-card.next-train {
+      border-color: var(--green);
+      background: #f0faf4;
+    }
+    .train-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+    .line-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .train-no {
+      font-size: 0.65rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .train-times {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .time-block { text-align: center; }
+    .time-block .t {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+    .time-block .s {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .train-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 80px;
+    }
+    .train-arrow .dur {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+    .train-arrow .line {
+      width: 100%;
+      height: 2px;
+      background: var(--border);
+      position: relative;
+    }
+    .train-arrow .line::after {
+      content: '→';
+      position: absolute;
+      right: -6px;
+      top: -9px;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    .train-dir {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-align: right;
+    }
+    .train-dir strong {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--text);
+    }
+    .next-badge {
+      display: none;
+      background: var(--green);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+    }
+    .train-card.next-train .next-badge { display: inline-block; }
+
+    @media (max-width: 540px) {
+      .train-card {
+        grid-template-columns: auto 1fr;
+        grid-template-rows: auto auto;
+      }
+      .train-dir { grid-column: 2; }
+    }
+
+    /* ──────────────────────────────────────────────
+       EMPTY STATE
+    ────────────────────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted);
+    }
+    .empty-state .emoji { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .empty-state p { font-size: 0.9rem; }
+
+    /* ──────────────────────────────────────────────
+       FULL TIMETABLE
+    ────────────────────────────────────────────── */
+    .timetable-controls {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+      align-items: center;
+    }
+    .timetable-controls select {
+      padding: 0.5rem 0.8rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-family: inherit;
+      color: var(--text);
+      outline: none;
+    }
+    .timetable-controls select:focus { border-color: var(--green); }
+    .timetable-scroll {
+      overflow-x: auto;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+    }
+    table {
+      border-collapse: collapse;
+      min-width: 600px;
+      width: 100%;
+    }
+    th {
+      background: var(--green);
+      color: #fff;
+      padding: 0.55rem 0.75rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-align: center;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+    }
+    th:first-child { text-align: left; min-width: 160px; }
+    td {
+      padding: 0.45rem 0.75rem;
+      font-size: 0.78rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    td:first-child { text-align: left; font-weight: 500; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8fdf9; }
+    tr:nth-child(even) td { background: #fafafa; }
+    tr:nth-child(even):hover td { background: #f0faf4; }
+
+    /* ──────────────────────────────────────────────
+       ROUTE MAP
+    ────────────────────────────────────────────── */
+    .route-map {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+    }
+    .station-dot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      position: relative;
+    }
+    .station-dot .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      flex-shrink: 0;
+      z-index: 1;
+    }
+    .station-dot .sname {
+      font-size: 0.58rem;
+      color: var(--muted);
+      white-space: nowrap;
+      max-width: 60px;
+      text-align: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .station-dot.highlight .dot { border-color: var(--green); }
+    .station-dot.highlight .sname { color: var(--green); font-weight: 600; }
+    .station-line {
+      height: 3px;
+      flex: 1;
+      min-width: 20px;
+      margin-bottom: 18px;
+    }
+
+    /* ──────────────────────────────────────────────
+       STATS STRIP
+    ────────────────────────────────────────────── */
+    .stats-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+    @media (max-width: 600px) {
+      .stats-strip { grid-template-columns: repeat(2, 1fr); }
+    }
+    .stat-item {
+      text-align: center;
+      padding: 1rem;
+      border-radius: 10px;
+      background: var(--bg);
+    }
+    .stat-item .val {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--green);
+    }
+    .stat-item .lbl {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* ──────────────────────────────────────────────
+       DISCLAIMER
+    ────────────────────────────────────────────── */
+    .disclaimer {
+      background: #fffbe6;
+      border: 1.5px solid #f5c518;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.78rem;
+      color: #7a6000;
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-start;
+    }
+
+    /* ──────────────────────────────────────────────
+       FOOTER
+    ────────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    footer a { color: var(--green); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     HEADER
+═══════════════════════════════════════════════ -->
+<header>
+  <div class="header-inner">
+    <div class="ktm-logo">KTM</div>
+    <div class="header-title">
+      <h1>Dashboard Jadwal KTM Komuter</h1>
+      <p>Lembah Klang · Utara Peninsula Malaysia</p>
+    </div>
+    <div class="header-time">
+      <div id="live-time">--:--</div>
+      <div id="live-date">---</div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════
+     MAIN
+═══════════════════════════════════════════════ -->
+<main>
+
+  <!-- ── STATS STRIP ─────────────────────────────── -->
+  <div class="card" style="padding: 1rem 1.5rem;">
+    <div class="stats-strip" id="stats-strip">
+      <div class="stat-item"><div class="val" id="stat-lines">4</div><div class="lbl">Laluan Komuter</div></div>
+      <div class="stat-item"><div class="val" id="stat-stations">0</div><div class="lbl">Stesen</div></div>
+      <div class="stat-item"><div class="val" id="stat-trains">0</div><div class="lbl">Jadual Hari Ini</div></div>
+      <div class="stat-item"><div class="val" id="stat-km">605</div><div class="lbl">Km Rangkaian</div></div>
+    </div>
+  </div>
+
+  <!-- ── SEARCH CARD ─────────────────────────────── -->
+  <div class="card">
+    <div class="card-title">
+      <div class="icon">🔍</div>
+      Cari Jadual Perjalanan
+    </div>
+
+    <!-- Day Type Toggle -->
+    <div style="margin-bottom: 1rem;">
+      <label>Hari</label>
+      <div class="day-toggle" id="day-toggle">
+        <button class="active" data-val="weekday" onclick="setDay(this)">Hari Bekerja</button>
+        <button data-val="weekend" onclick="setDay(this)">Hujung Minggu / Cuti Umum</button>
+      </div>
+    </div>
+
+    <!-- Search Inputs -->
+    <div class="search-grid">
+      <div>
+        <label for="sel-from">Dari Stesen</label>
+        <div class="input-wrap">
+          <select id="sel-from" onchange="handleFromChange()">
+            <option value="">-- Pilih Stesen --</option>
+          </select>
+          <span class="arrow">▼</span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;justify-content:flex-end;">
+        <button class="swap-btn" onclick="swapStations()" title="Tukar stesen">⇄</button>
+      </div>
+
+      <div>
+        <label for="sel-to">Ke Stesen</label>
+        <div class="input-wrap">
+          <select id="sel-to">
+            <option value="">-- Pilih Stesen --</option>
+          </select>
+          <span class="arrow">▼</span>
+        </div>
+      </div>
+
+      <div>
+        <label>&nbsp;</label>
+        <button class="btn-search" onclick="doSearch()">Cari Kereta 🚆</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── COUNTDOWN BANNER ─────────────────────────── -->
+  <div class="countdown-banner" id="countdown-banner">
+    <div class="countdown-left">
+      <span>Kereta berikutnya dari</span>
+      <div class="route-label" id="cnt-route">--</div>
+    </div>
+    <div class="countdown-right">
+      <div class="cnt-label">Berangkat dalam</div>
+      <div id="countdown-timer">--:--</div>
+      <div id="next-dep">--</div>
+    </div>
+  </div>
+
+  <!-- ── RESULTS CARD ─────────────────────────────── -->
+  <div class="card" id="results-card">
+    <div class="results-header">
+      <div class="card-title" style="margin:0;">
+        <div class="icon">🚆</div>
+        <span id="results-title">Hasil Carian</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+        <span class="results-count" id="results-count"></span>
+        <div class="filter-time">
+          <label style="margin:0;text-transform:none;font-size:0.82rem;">Filter:</label>
+          <select id="filter-period" onchange="applyFilter()">
+            <option value="all">Semua waktu</option>
+            <option value="subuh">Subuh (04–06)</option>
+            <option value="pagi">Pagi (06–12)</option>
+            <option value="tengahari">Tengah Hari (12–15)</option>
+            <option value="petang">Petang (15–19)</option>
+            <option value="malam">Malam (19–00)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Route Map -->
+    <div id="route-map-wrap" style="display:none;margin-bottom:1rem;">
+      <div class="route-map" id="route-map"></div>
+    </div>
+
+    <div id="disclaimer-wrap" style="display:none;margin-bottom:1rem;">
+      <div class="disclaimer">
+        ⚠️ Data jadual bersifat <strong>representatif</strong>. Sila semak jadual rasmi di
+        <a href="https://www.ktmb.com.my/TrainTime.html" target="_blank" rel="noopener">ktmb.com.my</a>
+        untuk ketepatan terkini.
+      </div>
+    </div>
+
+    <div class="train-list" id="train-list">
+      <div class="empty-state">
+        <div class="emoji">🔍</div>
+        <p>Pilih stesen asal dan destinasi, kemudian tekan <strong>Cari Kereta</strong>.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FULL TIMETABLE CARD ──────────────────────── -->
+  <div class="card" id="timetable-card">
+    <div class="card-title">
+      <div class="icon">📋</div>
+      Jadual Penuh Laluan
+    </div>
+    <div class="timetable-controls">
+      <div class="input-wrap" style="min-width:220px;">
+        <select id="tt-line" onchange="renderTimetable()">
+          <!-- populated by JS -->
+        </select>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="input-wrap" style="min-width:160px;">
+        <select id="tt-direction" onchange="renderTimetable()">
+          <option value="southbound" id="tt-dir-south">Arah A (→ Terminal B)</option>
+          <option value="northbound" id="tt-dir-north">Arah B (→ Terminal A)</option>
+        </select>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="day-toggle" id="tt-day-toggle">
+        <button class="active" data-val="weekday" onclick="setTTDay(this)">Hari Bekerja</button>
+        <button data-val="weekend" onclick="setTTDay(this)">Hujung Minggu</button>
+      </div>
+    </div>
+    <div class="timetable-scroll">
+      <table id="timetable" aria-label="Jadual penuh kereta KTM">
+        <thead><tr><th>Stesen</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Sumber data: <a href="https://www.ktmb.com.my" target="_blank" rel="noopener">KTM Berhad (KTMB)</a>
+  &nbsp;·&nbsp; Data terkini Timetable Efektif April 2026
+  &nbsp;·&nbsp; Dashboard ini tidak berafiliasi rasmi dengan KTMB
+</footer>
+
+<!-- ═══════════════════════════════════════════════
+     SCRIPTS
+═══════════════════════════════════════════════ -->
+<script src="schedule-data.js"></script>
+<script>
+/* ─── STATE ─────────────────────────────────────────────────────── */
+let currentDayType = 'weekday';
+let ttDayType      = 'weekday';
+let searchResults  = [];
+let countdownInterval = null;
+let nextTrainDepMins  = null;
+let nextTrainInfo     = null;
+
+/* ─── INIT ──────────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  populateStationSelects();
+  populateTimetableLineSelect();
+  updateStats();
+  renderTimetable();
+  updateClock();
+  setInterval(updateClock, 1000);
+  setInterval(tickCountdown, 1000);
+});
+
+/* ─── CLOCK ─────────────────────────────────────────────────────── */
+function updateClock() {
+  const now  = new Date();
+  const days = ['Ahad','Isnin','Selasa','Rabu','Khamis','Jumaat','Sabtu'];
+  const mons = ['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogs','Sep','Okt','Nov','Dis'];
+  document.getElementById('live-time').textContent =
+    now.toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+  document.getElementById('live-date').textContent =
+    `${days[now.getDay()]}, ${now.getDate()} ${mons[now.getMonth()]} ${now.getFullYear()}`;
+}
+
+/* ─── STATS ─────────────────────────────────────────────────────── */
+function updateStats() {
+  const stationSet = new Set();
+  let trainCount = 0;
+  KTM_LINES.forEach(l => {
+    l.stations.forEach(s => stationSet.add(s.name));
+    const sch = currentDayType === 'weekday' ? l.weekday : l.weekend;
+    trainCount += sch.southbound.length + sch.northbound.length;
+  });
+  document.getElementById('stat-stations').textContent = stationSet.size;
+  document.getElementById('stat-trains').textContent   = trainCount;
+}
+
+/* ─── POPULATE SELECTS ──────────────────────────────────────────── */
+function populateStationSelects() {
+  const stations = getAllStations();
+  ['sel-from', 'sel-to'].forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '<option value="">-- Pilih Stesen --</option>';
+    stations.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s;
+      opt.textContent = s;
+      sel.appendChild(opt);
+    });
+  });
+}
+
+function populateTimetableLineSelect() {
+  const sel = document.getElementById('tt-line');
+  sel.innerHTML = '';
+  KTM_LINES.forEach(l => {
+    const opt = document.createElement('option');
+    opt.value = l.id;
+    opt.textContent = l.name;
+    sel.appendChild(opt);
+  });
+}
+
+/* ─── DAY TYPE ──────────────────────────────────────────────────── */
+function setDay(btn) {
+  currentDayType = btn.dataset.val;
+  document.querySelectorAll('#day-toggle button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateStats();
+  if (searchResults.length) doSearch();
+}
+
+function setTTDay(btn) {
+  ttDayType = btn.dataset.val;
+  document.querySelectorAll('#tt-day-toggle button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTimetable();
+}
+
+/* ─── HANDLE FROM CHANGE ────────────────────────────────────────── */
+function handleFromChange() {
+  // No action needed; user picks 'to' separately
+}
+
+/* ─── SWAP STATIONS ─────────────────────────────────────────────── */
+function swapStations() {
+  const selFrom = document.getElementById('sel-from');
+  const selTo   = document.getElementById('sel-to');
+  const tmp     = selFrom.value;
+  selFrom.value = selTo.value;
+  selTo.value   = tmp;
+}
+
+/* ─── SEARCH ────────────────────────────────────────────────────── */
+function doSearch() {
+  const from = document.getElementById('sel-from').value.trim();
+  const to   = document.getElementById('sel-to').value.trim();
+
+  if (!from || !to) {
+    alert('Sila pilih stesen asal dan destinasi.');
+    return;
+  }
+  if (from === to) {
+    alert('Stesen asal dan destinasi tidak boleh sama.');
+    return;
+  }
+
+  searchResults = searchTrains(from, to, currentDayType);
+  renderResults(from, to, searchResults);
+  updateCountdown(searchResults);
+  drawRouteMap(from, to, searchResults);
+  document.getElementById('results-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ─── APPLY FILTER ──────────────────────────────────────────────── */
+function applyFilter() {
+  const period = document.getElementById('filter-period').value;
+  let filtered = searchResults;
+  if (period !== 'all') {
+    const ranges = {
+      subuh:     [4,  6],
+      pagi:      [6,  12],
+      tengahari: [12, 15],
+      petang:    [15, 19],
+      malam:     [19, 24],
+    };
+    const [h1, h2] = ranges[period];
+    filtered = searchResults.filter(t => {
+      const h = Math.floor(t.depMins / 60);
+      return h >= h1 && h < h2;
+    });
+  }
+  renderTrainCards(filtered);
+}
+
+/* ─── RENDER RESULTS ────────────────────────────────────────────── */
+function renderResults(from, to, results) {
+  document.getElementById('results-title').textContent =
+    `${from} → ${to}`;
+  document.getElementById('results-count').textContent =
+    `${results.length} kereta ditemui`;
+  document.getElementById('disclaimer-wrap').style.display = 'block';
+  document.getElementById('filter-period').value = 'all';
+  renderTrainCards(results);
+}
+
+function renderTrainCards(results) {
+  const list = document.getElementById('train-list');
+  if (!results.length) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="emoji">🚫</div>
+        <p>Tiada kereta ditemui untuk laluan ini. Cuba tukar stesen atau hari.</p>
+      </div>`;
+    return;
+  }
+
+  const nowMins = getNowMinutes();
+  const nextIdx = results.findIndex(t => t.depMins >= nowMins);
+
+  list.innerHTML = results.map((t, i) => `
+    <div class="train-card ${i === nextIdx ? 'next-train' : ''}">
+      <div class="train-badge">
+        <div class="line-dot" style="background:${t.lineColor}"></div>
+        <div class="train-no">${t.trainNo}</div>
+        ${i === nextIdx ? '<span class="next-badge">SETERUSNYA</span>' : ''}
+      </div>
+      <div class="train-times">
+        <div class="time-block">
+          <div class="t">${t.departure}</div>
+          <div class="s">${t.from}</div>
+        </div>
+        <div class="train-arrow">
+          <div class="dur">${formatDuration(t.durMins)}</div>
+          <div class="line"></div>
+        </div>
+        <div class="time-block">
+          <div class="t">${t.arrival}</div>
+          <div class="s">${t.to}</div>
+        </div>
+      </div>
+      <div class="train-dir">
+        <strong>${t.lineShort}</strong>
+        <span>${t.direction}</span>
+      </div>
+    </div>`).join('');
+}
+
+/* ─── ROUTE MAP ─────────────────────────────────────────────────── */
+function drawRouteMap(from, to, results) {
+  const wrap = document.getElementById('route-map-wrap');
+  const map  = document.getElementById('route-map');
+  if (!results.length) { wrap.style.display = 'none'; return; }
+
+  // Find first matching line and direction
+  const r = results[0];
+  const line = KTM_LINES.find(l => l.id === r.lineId);
+  if (!line) { wrap.style.display = 'none'; return; }
+
+  const stations = r.direction.includes(line.terminalB) ? line.stations : [...line.stations].reverse();
+
+  map.innerHTML = stations.map((s, i) => {
+    const isFrom    = s.name === from;
+    const isTo      = s.name === to;
+    const highlight = isFrom || isTo;
+    return `
+      ${i > 0 ? `<div class="station-line" style="background:${line.color}"></div>` : ''}
+      <div class="station-dot ${highlight ? 'highlight' : ''}">
+        <div class="dot" style="background:${highlight ? line.color : '#ccc'}"></div>
+        <div class="sname" title="${s.name}">${s.name}</div>
+      </div>`;
+  }).join('');
+
+  wrap.style.display = 'block';
+}
+
+/* ─── COUNTDOWN ─────────────────────────────────────────────────── */
+function updateCountdown(results) {
+  const nowMins = getNowMinutes();
+  const next    = results.find(t => t.depMins >= nowMins);
+  if (!next) {
+    document.getElementById('countdown-banner').classList.remove('visible');
+    nextTrainDepMins = null;
+    return;
+  }
+  nextTrainDepMins = next.depMins;
+  nextTrainInfo    = next;
+  document.getElementById('cnt-route').textContent =
+    `${next.from} → ${next.to}`;
+  document.getElementById('next-dep').textContent =
+    `Keberangkatan: ${next.departure}`;
+  document.getElementById('countdown-banner').classList.add('visible');
+  tickCountdown();
+}
+
+function tickCountdown() {
+  if (nextTrainDepMins === null) return;
+  const diff = nextTrainDepMins - getNowMinutes();
+  if (diff < 0) {
+    // Refresh – find next in the list
+    if (searchResults.length) updateCountdown(searchResults);
+    return;
+  }
+  const h = Math.floor(diff / 60);
+  const m = diff % 60;
+  document.getElementById('countdown-timer').textContent =
+    `${h > 0 ? h + 'j ' : ''}${String(m).padStart(2, '0')} min`;
+}
+
+/* ─── FULL TIMETABLE ────────────────────────────────────────────── */
+function renderTimetable() {
+  const lineId  = document.getElementById('tt-line').value;
+  const dir     = document.getElementById('tt-direction').value;
+  const line    = KTM_LINES.find(l => l.id === lineId);
+  if (!line) return;
+
+  // Update direction labels
+  document.getElementById('tt-dir-south').textContent =
+    `${line.terminalA} → ${line.terminalB}`;
+  document.getElementById('tt-dir-north').textContent =
+    `${line.terminalB} → ${line.terminalA}`;
+
+  const data = getFullTimetable(lineId, dir, ttDayType);
+  if (!data) return;
+
+  const { stations, trains } = data;
+  const table = document.getElementById('timetable');
+
+  // Header row
+  const thead = table.querySelector('thead');
+  thead.innerHTML = `<tr>
+    <th>Stesen</th>
+    ${trains.map(t => `<th>${t.trainNo}</th>`).join('')}
+  </tr>`;
+
+  // Body rows – one per station
+  const tbody = table.querySelector('tbody');
+  tbody.innerHTML = stations.map((sName, si) => `
+    <tr>
+      <td>${sName}</td>
+      ${trains.map(t => `<td>${t.times[si]}</td>`).join('')}
+    </tr>`).join('');
+}
+
+/* ─── HELPERS ───────────────────────────────────────────────────── */
+function getNowMinutes() {
+  const now = new Date();
+  return now.getHours() * 60 + now.getMinutes();
+}
+
+function formatDuration(mins) {
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h === 0) return `${m} min`;
+  if (m === 0) return `${h}j`;
+  return `${h}j ${m}min`;
+}
+</script>
+</body>
+</html>
