@@ -510,71 +510,6 @@
     .empty-state p { font-size: 0.88rem; }
 
     /* ──────────────────────────────────────────────
-       FULL TIMETABLE
-    ────────────────────────────────────────────── */
-    .timetable-controls {
-      display: flex;
-      gap: 0.65rem;
-      flex-wrap: wrap;
-      margin-bottom: 1rem;
-      align-items: center;
-    }
-    .timetable-controls .input-wrap {
-      flex: 1 1 160px;
-      min-width: 0;
-    }
-    .timetable-controls select {
-      padding: 0.5rem 2rem 0.5rem 0.8rem;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.83rem;
-      font-family: inherit;
-      color: var(--text);
-      outline: none;
-      width: 100%;
-      appearance: none;
-      -webkit-appearance: none;
-      background: #fff;
-    }
-    .timetable-controls select:focus { border-color: var(--green); }
-    .timetable-scroll {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      border-radius: 8px;
-      border: 1.5px solid var(--border);
-    }
-    table {
-      border-collapse: collapse;
-      min-width: 500px;
-      width: 100%;
-    }
-    th {
-      background: var(--green);
-      color: #fff;
-      padding: 0.5rem 0.65rem;
-      font-size: 0.72rem;
-      font-weight: 600;
-      text-align: center;
-      white-space: nowrap;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-    }
-    th:first-child { text-align: left; min-width: 140px; }
-    td {
-      padding: 0.4rem 0.65rem;
-      font-size: 0.75rem;
-      text-align: center;
-      border-bottom: 1px solid var(--border);
-      white-space: nowrap;
-    }
-    td:first-child { text-align: left; font-weight: 500; }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: #f8fdf9; }
-    tr:nth-child(even) td { background: #fafafa; }
-    tr:nth-child(even):hover td { background: #f0faf4; }
-
-    /* ──────────────────────────────────────────────
        ROUTE MAP
     ────────────────────────────────────────────── */
     .route-map {
@@ -814,38 +749,6 @@
     </div>
   </div>
 
-  <!-- ── FULL TIMETABLE CARD ──────────────────────── -->
-  <div class="card" id="timetable-card">
-    <div class="card-title">
-      <div class="icon">📋</div>
-      Jadual Penuh Laluan
-    </div>
-    <div class="timetable-controls">
-      <div class="input-wrap">
-        <select id="tt-line" onchange="renderTimetable()">
-          <!-- populated by JS -->
-        </select>
-        <span class="arrow">▼</span>
-      </div>
-      <div class="input-wrap">
-        <select id="tt-direction" onchange="renderTimetable()">
-          <option value="southbound" id="tt-dir-south">Arah A (→ Terminal B)</option>
-          <option value="northbound" id="tt-dir-north">Arah B (→ Terminal A)</option>
-        </select>
-        <span class="arrow">▼</span>
-      </div>
-      <div class="day-toggle" id="tt-day-toggle">
-        <button class="active" data-val="weekday" onclick="setTTDay(this)">Hari Bekerja</button>
-        <button data-val="weekend" onclick="setTTDay(this)">Hujung Minggu</button>
-      </div>
-    </div>
-    <div class="timetable-scroll">
-      <table id="timetable" aria-label="Jadual penuh kereta KTM">
-        <thead><tr><th>Stesen</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
 
 </main>
 
@@ -862,7 +765,6 @@
 <script>
 /* ─── STATE ─────────────────────────────────────────────────────── */
 let currentDayType = 'weekday';
-let ttDayType      = 'weekday';
 let searchResults  = [];
 let countdownInterval = null;
 let nextTrainDepMins  = null;
@@ -871,9 +773,7 @@ let nextTrainInfo     = null;
 /* ─── INIT ──────────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
   populateStationSelects();
-  populateTimetableLineSelect();
   updateStats();
-  renderTimetable();
   updateClock();
   setInterval(updateClock, 1000);
   setInterval(tickCountdown, 1000);
@@ -918,17 +818,6 @@ function populateStationSelects() {
   });
 }
 
-function populateTimetableLineSelect() {
-  const sel = document.getElementById('tt-line');
-  sel.innerHTML = '';
-  KTM_LINES.forEach(l => {
-    const opt = document.createElement('option');
-    opt.value = l.id;
-    opt.textContent = l.name;
-    sel.appendChild(opt);
-  });
-}
-
 /* ─── DAY TYPE ──────────────────────────────────────────────────── */
 function setDay(btn) {
   currentDayType = btn.dataset.val;
@@ -936,13 +825,6 @@ function setDay(btn) {
   btn.classList.add('active');
   updateStats();
   if (searchResults.length) doSearch();
-}
-
-function setTTDay(btn) {
-  ttDayType = btn.dataset.val;
-  document.querySelectorAll('#tt-day-toggle button').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderTimetable();
 }
 
 /* ─── HANDLE FROM CHANGE ────────────────────────────────────────── */
@@ -1113,41 +995,6 @@ function tickCountdown() {
   const m = diff % 60;
   document.getElementById('countdown-timer').textContent =
     `${h > 0 ? h + 'j ' : ''}${String(m).padStart(2, '0')} min`;
-}
-
-/* ─── FULL TIMETABLE ────────────────────────────────────────────── */
-function renderTimetable() {
-  const lineId  = document.getElementById('tt-line').value;
-  const dir     = document.getElementById('tt-direction').value;
-  const line    = KTM_LINES.find(l => l.id === lineId);
-  if (!line) return;
-
-  // Update direction labels
-  document.getElementById('tt-dir-south').textContent =
-    `${line.terminalA} → ${line.terminalB}`;
-  document.getElementById('tt-dir-north').textContent =
-    `${line.terminalB} → ${line.terminalA}`;
-
-  const data = getFullTimetable(lineId, dir, ttDayType);
-  if (!data) return;
-
-  const { stations, trains } = data;
-  const table = document.getElementById('timetable');
-
-  // Header row
-  const thead = table.querySelector('thead');
-  thead.innerHTML = `<tr>
-    <th>Stesen</th>
-    ${trains.map(t => `<th>${t.trainNo}</th>`).join('')}
-  </tr>`;
-
-  // Body rows – one per station
-  const tbody = table.querySelector('tbody');
-  tbody.innerHTML = stations.map((sName, si) => `
-    <tr>
-      <td>${sName}</td>
-      ${trains.map(t => `<td>${t.times[si]}</td>`).join('')}
-    </tr>`).join('');
 }
 
 /* ─── HELPERS ───────────────────────────────────────────────────── */
