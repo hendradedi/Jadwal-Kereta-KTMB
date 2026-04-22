@@ -23,12 +23,16 @@
       --radius:  12px;
       --shadow:  0 2px 12px rgba(0,0,0,.08);
     }
-    html { scroll-behavior: smooth; }
+    html {
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+    }
     body {
       font-family: 'Inter', system-ui, sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
     /* ──────────────────────────────────────────────
@@ -105,6 +109,7 @@
       padding: 1.25rem 1rem;
       display: grid;
       gap: 1.25rem;
+      min-width: 0;
     }
     @media (max-width: 480px) {
       main { padding: 0.75rem 0.75rem; gap: 0.9rem; }
@@ -118,6 +123,7 @@
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       padding: 1.25rem;
+      min-width: 0;
     }
     @media (max-width: 480px) {
       .card { padding: 1rem 0.9rem; border-radius: 10px; }
@@ -532,6 +538,8 @@
       -webkit-overflow-scrolling: touch;
       padding-bottom: 0.5rem;
       gap: 0;
+      width: 100%;
+      max-width: 100%;
     }
     .station-dot {
       display: flex;
